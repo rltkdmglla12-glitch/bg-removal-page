@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>rocket-register bg removal helper</title>
+</head>
+<body>
+<!--
+  이 페이지는 rocket-register 크롬 확장프로그램(개인용)의 "배경 자동제거" 기능이 쓰는 도우미 페이지다.
+  크롬 확장프로그램(MV3)은 보안정책(CSP)상 onnxruntime-web이 내부적으로 쓰는 blob: 스크립트 로딩을
+  절대 허용하지 않아서, 배경 제거 계산만 이 페이지(일반 웹페이지, CSP 제약 없음)에서 대신 하고
+  postMessage로 결과만 확장프로그램에 돌려준다. 이미지 자체는 서버에 저장되지 않고 메모리에서만 처리된다.
+-->
+<script type="importmap">{"imports":{"onnxruntime-web":"./vendor/ort.bundle.min.mjs"}}</script>
+<script type="module">
+  import { removeBackground } from './vendor/index.mjs';
+
+  window.addEventListener('message', async (event) => {
+    const msg = event.data;
+    if (!msg || msg.type !== 'rr-bg-remove') return;
+    const { id, dataUrl } = msg;
+    try {
+      const blob = await removeBackground(dataUrl, { device: 'cpu' });
+      const resultUrl = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(String(fr.result || ''));
+        fr.onerror = () => reject(fr.error);
+        fr.readAsDataURL(blob);
+      });
+      event.source.postMessage({ type: 'rr-bg-remove-result', id, dataUrl: resultUrl }, '*');
+    } catch (e) {
+      event.source.postMessage({ type: 'rr-bg-remove-error', id, error: String((e && e.message) || e) }, '*');
+    }
+  });
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'rr-bg-ready' }, '*');
+  }
+</script>
+</body>
+</html>
