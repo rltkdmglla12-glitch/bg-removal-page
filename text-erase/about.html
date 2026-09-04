@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- Content Security Policy. Stricter than index.html: this page loads no
+       third-party code or assets at all — fonts are self-hosted. -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    base-uri 'self';
+    object-src 'none';
+    form-action 'none';
+    script-src 'self';
+    style-src 'self' 'unsafe-inline';
+    font-src 'self';
+    img-src 'self' data:;
+    manifest-src 'self';
+    connect-src 'self';
+  ">
+
+  <title>About WatermarkOut — Built by Prince Ramgarhia (DiceCodes)</title>
+  <meta name="description" content="About WatermarkOut — a free, private, browser-based watermark remover for AI-generated images and videos. Built solo by Prince Ramgarhia at DiceCodes in India.">
+  <meta name="author" content="Prince Ramgarhia (DiceCodes)">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://iamramgarhia.github.io/free-ai-watermark-remover/about.html">
+
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="application-name" content="WatermarkOut">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://iamramgarhia.github.io/free-ai-watermark-remover/about.html">
+  <meta property="og:title" content="About WatermarkOut — Built by Prince Ramgarhia (DiceCodes)">
+  <meta property="og:description" content="The story behind WatermarkOut — solo-built, no VC, free forever. Made in India 🇮🇳.">
+  <meta property="og:image" content="https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png">
+  <meta property="og:site_name" content="WatermarkOut">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="About WatermarkOut — by DiceCodes">
+  <meta name="twitter:description" content="Solo-built browser-based watermark remover. No VC, no growth team, free forever.">
+  <meta name="twitter:image" content="https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png">
+
+  <!-- Person schema for author -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Prince Ramgarhia",
+    "alternateName": "DiceCodes",
+    "url": "https://dicecodes.com",
+    "email": "Contact@dicecodes.com",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Batala",
+      "addressRegion": "Punjab",
+      "addressCountry": "IN"
+    },
+    "jobTitle": "Independent Software Developer",
+    "sameAs": [
+      "https://github.com/IamRamgarhia",
+      "https://dicecodes.com"
+    ]
+  }
+  </script>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+  <!-- Self-hosted fonts — no third-party request. See css/fonts.css. -->
+  <link rel="stylesheet" href="css/fonts.css">
+
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/about.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo-icon.svg" alt="" class="brand-icon">
+      <span class="brand-name">WatermarkOut</span>
+    </div>
+    <nav class="topnav">
+      <a class="nav-btn" href="index.html">Editor</a>
+      <a class="nav-btn" href="guide.html">Guide</a>
+      <a class="nav-btn active" href="about.html">About</a>
+    </nav>
+  </header>
+
+  <main class="about-page">
+
+    <!-- HERO -->
+    <section class="about-hero">
+      <img src="assets/logo.svg" alt="WatermarkOut" class="about-logo">
+      <h1 class="about-title">About WatermarkOut</h1>
+      <p class="about-tagline">
+        A free, private watermark remover for AI-generated images and short
+        videos — the AI runs in your browser, so nothing is ever uploaded.
+        Nothing to install. Nothing to sign up for.
+      </p>
+      <div class="badge-row">
+        <span class="badge" id="version-badge">v1.5.0</span>
+        <span class="badge">MIT License</span>
+        <span class="badge success">No telemetry</span>
+        <span class="badge success">No accounts</span>
+        <span class="badge success">No cloud</span>
+      </div>
+    </section>
+
+    <!-- WHY -->
+    <section class="about-card">
+      <h2>🎯 Why this exists</h2>
+      <blockquote>
+        Watermark removers typically run on someone else's servers: you upload a
+        private photo, pay a monthly subscription, and often get a result with
+        <em>their</em> watermark on it unless you upgrade. That's broken.
+      </blockquote>
+      <p>
+        WatermarkOut runs <strong>entirely in your browser</strong>. Your file
+        never leaves the tab. No subscriptions, no accounts, no cloud — and because
+        the source is MIT-licensed, you can check that claim rather than trust it.
+        Apart from the app's own files and a one-time 29&nbsp;MB model download on
+        your first visit, nothing goes over the network.
+      </p>
+    </section>
+
+    <!-- CREATOR -->
+    <section class="about-card creator-card">
+      <div class="creator-flex">
+        <!-- Fallback is wired in JS (not an inline onerror=) so the page needs
+             no 'unsafe-inline' in script-src. It stays LOCAL on purpose: an
+             external avatar host would make an outbound request on every About
+             view, contradicting the "network tab is empty" claim above. -->
+        <img src="assets/prince-avatar.png" alt="Prince Ramgarhia"
+             class="creator-avatar" id="creator-avatar">
+        <div class="creator-body">
+          <p class="label">BUILT BY</p>
+          <h2 class="creator-name">Prince Ramgarhia</h2>
+          <p class="creator-studio">
+            <a href="https://dicecodes.com" target="_blank" rel="noopener">DiceCodes</a>
+            · 📍 Batala, Punjab, India 🇮🇳
+          </p>
+          <blockquote class="creator-quote">
+            Solo-built. No VC. No growth team.
+            Just one developer trying to make pro-grade creative tooling
+            permanently free for everyone.
+          </blockquote>
+          <div class="creator-links">
+            <a href="https://dicecodes.com" target="_blank" rel="noopener" class="link-pill">
+              🌐 dicecodes.com
+            </a>
+            <a href="mailto:Contact@dicecodes.com" class="link-pill">
+              📧 Contact@dicecodes.com
+            </a>
+            <a href="https://github.com/IamRamgarhia" target="_blank" rel="noopener" class="link-pill">
+              🐙 @IamRamgarhia
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="about-card">
+      <h2>⚙️ How it works (the boring honest version)</h2>
+      <ol class="howto-list">
+        <li>
+          <strong>You drop an image in.</strong> The file becomes an in-memory
+          <code>ImageData</code> object in your browser. It never leaves.
+        </li>
+        <li>
+          <strong>You paint the watermark.</strong> A canvas overlay tracks where
+          you brush — that becomes the inpainting mask.
+        </li>
+        <li>
+          <strong>An AI model runs in WebAssembly.</strong> The model
+          (<a href="https://github.com/Picsart-AI-Research/MI-GAN" target="_blank" rel="noopener">MI-GAN</a>,
+          29 MB, downloaded once and cached) runs inside your browser tab via
+          <a href="https://onnxruntime.ai/docs/tutorials/web/" target="_blank" rel="noopener">ONNX Runtime Web</a>
+          — on your GPU if your browser supports WebGPU, otherwise on your CPU.
+        </li>
+        <li>
+          <strong>You download the result.</strong> Same browser, same tab, same
+          machine. No server saw a thing.
+        </li>
+      </ol>
+      <p class="text-muted">
+        Open your browser's Network tab and check for yourself: once the app and the model are cached, removing a watermark makes no network requests at all.
+      </p>
+    </section>
+
+    <!-- OTHER PROJECTS -->
+    <section class="about-card">
+      <h2>🧰 Other free tools by DiceCodes</h2>
+      <div class="project-grid">
+        <a href="https://github.com/IamRamgarhia/Free-GST-Billing-Software"
+           class="project-card" target="_blank" rel="noopener">
+          <h3>Free GST Billing</h3>
+          <p>Free GST invoicing — no subscription, no per-invoice fees.</p>
+          <span class="project-cta">View on GitHub →</span>
+        </a>
+        <a href="https://github.com/IamRamgarhia/SEO-Tool"
+           class="project-card" target="_blank" rel="noopener">
+          <h3>SEO Tool</h3>
+          <p>A self-hosted SEO toolkit you run yourself. 150+ tools.</p>
+          <span class="project-cta">View on GitHub →</span>
+        </a>
+        <a href="https://github.com/IamRamgarhia/AdForge"
+           class="project-card" target="_blank" rel="noopener">
+          <h3>AdForge</h3>
+          <p>Open-source ad creative builder.</p>
+          <span class="project-cta">View on GitHub →</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- SUPPORT -->
+    <section class="about-card support-card">
+      <h2>💝 Support free software</h2>
+      <p>
+        WatermarkOut is free <em>forever</em>. There are no servers to pay for,
+        no subscriptions to add later, no premium tier to unlock.
+        If it saved you money, time, or a privacy headache — and you'd like to
+        send some thanks back — here's how:
+      </p>
+      <div class="support-grid">
+        <a href="upi://pay?pa=princeramgarhiaa-1@okaxis&pn=Prince%20Ramgarhia&cu=INR"
+           class="support-tile">
+          <div class="support-icon">₹</div>
+          <div>
+            <strong>UPI Donation</strong>
+            <p class="text-muted">Indian users — opens any UPI app</p>
+          </div>
+        </a>
+        <a href="https://github.com/sponsors/IamRamgarhia"
+           target="_blank" rel="noopener" class="support-tile">
+          <div class="support-icon">💖</div>
+          <div>
+            <strong>GitHub Sponsors</strong>
+            <p class="text-muted">Monthly or one-time</p>
+          </div>
+        </a>
+        <a href="https://github.com/IamRamgarhia/free-ai-watermark-remover"
+           target="_blank" rel="noopener" class="support-tile">
+          <div class="support-icon">⭐</div>
+          <div>
+            <strong>Star the repo</strong>
+            <p class="text-muted">Free, helps others find it</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- TECH -->
+    <section class="about-card">
+      <h2>🔧 Built with</h2>
+      <ul class="tech-list">
+        <li><strong>Vanilla HTML/CSS/JS</strong> — no build step, no framework, no node_modules</li>
+        <li><strong>MI-GAN</strong> — mobile/browser-optimized inpainting (Picsart Research, ICCV 2023)</li>
+        <li><strong>ONNX Runtime Web</strong> — WebGPU + WASM AI inference in the browser</li>
+        <li><strong>Canvas 2D</strong> — masking, cropping, and compositing (no image libraries)</li>
+        <li><strong>IndexedDB</strong> + <strong>Service Worker</strong> — offline support</li>
+        <li><strong>GitHub Pages</strong> + <strong>Hugging Face</strong> — free hosting forever</li>
+      </ul>
+      <p class="text-muted">
+        Source: <a href="https://github.com/IamRamgarhia/free-ai-watermark-remover" target="_blank" rel="noopener">github.com/IamRamgarhia/free-ai-watermark-remover</a>
+        · License: MIT · Audit anything. Fork anything.
+      </p>
+    </section>
+
+    <footer class="about-footer">
+      <p class="footer-credit">
+        Built with ❤️ by <a href="https://dicecodes.com" target="_blank" rel="noopener">DiceCodes</a>
+        · Made in India 🇮🇳
+      </p>
+      <p class="footer-links text-muted">
+        🌐 <a href="https://dicecodes.com" target="_blank" rel="noopener">dicecodes.com</a>
+        · 📧 <a href="mailto:Contact@dicecodes.com">Contact@dicecodes.com</a>
+        · 🐙 <a href="https://github.com/IamRamgarhia" target="_blank" rel="noopener">@IamRamgarhia</a>
+      </p>
+    </footer>
+
+  </main>
+
+  <script type="module" src="js/about.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
+  <!-- ===== Content Security Policy =====
+       Defence-in-depth: the ONNX runtime (jsDelivr) and the model (HuggingFace)
+       both come from third parties, so this pins exactly which origins the page
+       may load code and data from. Notes on the non-obvious bits:
+         'wasm-unsafe-eval' — required to compile the ONNX WebAssembly.
+         script-src blob:   — ORT runs inference in a Worker it builds at runtime
+                              (ort.env.wasm.proxy), and that worker dynamically
+                              import()s a blob URL. Dropping blob: here makes the
+                              WASM backend fail outright with "Failed to fetch
+                              dynamically imported module" — verified, not guessed.
+                              worker-src alone does NOT cover that import.
+         style-src unsafe-inline — inline style attributes (progress bar widths).
+                                   Scripts do NOT get unsafe-inline.
+         connect-src hf.co  — HuggingFace redirects model downloads to CDN subdomains.
+       frame-ancestors is not valid in a meta tag; sw.js sets it as a real header. -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    base-uri 'self';
+    object-src 'none';
+    form-action 'none';
+    script-src 'self' blob: 'wasm-unsafe-eval' https://cdn.jsdelivr.net;
+    worker-src 'self' blob:;
+    style-src 'self' 'unsafe-inline';
+    font-src 'self';
+    img-src 'self' data: blob:;
+    media-src 'self' blob:;
+    manifest-src 'self';
+    connect-src 'self' blob: data: https://cdn.jsdelivr.net https://huggingface.co https://*.huggingface.co https://*.hf.co;
+  ">
+
+  <!-- ===== Primary SEO meta ===== -->
+  <!-- Title kept under ~60 chars so it isn't truncated in results, and leads
+       with the search term rather than the (unknown) brand name. -->
+  <title>Free AI Watermark Remover — No Upload | WatermarkOut</title>
+  <meta name="description" content="Remove watermarks from AI images and short videos free. The AI runs in your browser — files are never uploaded. No account, no sign-up, open source.">
+  <meta name="author" content="Prince Ramgarhia (DiceCodes)">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://iamramgarhia.github.io/free-ai-watermark-remover/">
+
+  <!-- ===== Theme + PWA ===== -->
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="application-name" content="WatermarkOut">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WatermarkOut">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- ===== Open Graph (Facebook, LinkedIn, Slack, Discord previews) ===== -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://iamramgarhia.github.io/free-ai-watermark-remover/">
+  <meta property="og:title" content="Free AI Watermark Remover — Runs in Your Browser">
+  <meta property="og:description" content="Erase watermarks from AI images and short videos. The AI runs in your browser, so your files are never uploaded. Free, open source, no sign-up.">
+  <meta property="og:image" content="https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="WatermarkOut — Free AI Watermark Remover">
+  <meta property="og:site_name" content="WatermarkOut">
+  <meta property="og:locale" content="en_US">
+
+  <!-- ===== Twitter / X Card ===== -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Free AI Watermark Remover — Runs in Your Browser">
+  <meta name="twitter:description" content="Remove watermarks from AI-generated images &amp; videos, entirely in your browser. Free, private, open source.">
+  <meta name="twitter:image" content="https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png">
+  <meta name="twitter:image:alt" content="WatermarkOut interface showing watermark removal">
+
+  <!-- ===== JSON-LD structured data (Google Rich Results) ===== -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "WatermarkOut",
+    "applicationCategory": "MultimediaApplication",
+    "applicationSubCategory": "Photo Editor",
+    "operatingSystem": "Web Browser (Chrome, Edge, Firefox, Safari)",
+    "description": "Free AI-powered watermark remover for images and videos. Runs entirely in your browser using ONNX Runtime Web and the MI-GAN inpainting model. No uploads, no accounts, no cloud.",
+    "url": "https://iamramgarhia.github.io/free-ai-watermark-remover/",
+    "image": "https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Prince Ramgarhia",
+      "url": "https://dicecodes.com",
+      "sameAs": [
+        "https://github.com/IamRamgarhia",
+        "https://dicecodes.com"
+      ]
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "DiceCodes",
+      "url": "https://dicecodes.com"
+    },
+    "softwareVersion": "1.5.0",
+    "inLanguage": "en",
+    "isAccessibleForFree": true,
+    "browserRequirements": "Requires JavaScript and WebAssembly. Chrome/Edge 90+, Firefox 90+, Safari 16.4+.",
+    "softwareRequirements": "A modern web browser. No installation or account required.",
+    "permissions": "No account, no network upload. Files are processed locally in the browser.",
+    "license": "https://opensource.org/licenses/MIT",
+    "codeRepository": "https://github.com/IamRamgarhia/free-ai-watermark-remover",
+    "screenshot": "https://iamramgarhia.github.io/free-ai-watermark-remover/assets/social-preview.png",
+    "featureList": [
+      "Automatically detect and remove visible watermarks from AI-generated images (Google Gemini, Bing Image Creator, Meta AI and others)",
+      "Recovers the detail hidden under a semi-transparent watermark rather than painting over it",
+      "Remove watermarks from short videos with audio preserved",
+      "Runs entirely in the browser — files are never uploaded",
+      "Works offline after the first visit",
+      "Rectangle, brush and eraser masking, plus keyboard-only masking",
+      "Free and open source under the MIT license"
+    ]
+  }
+  </script>
+
+  <!-- ===== Manifest, icons, fonts ===== -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="assets/logo-icon.svg">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+
+  <!-- Fonts are self-hosted (see css/fonts.css) — no third-party request, so
+       the "your files never leave the browser" claim holds for the page too. -->
+  <link rel="preload" href="assets/fonts/syne-variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
+  <link rel="stylesheet" href="css/app.css">
+
+  <!-- COI must register BEFORE any module — enables WASM threads + WebGPU -->
+  <script src="js/coi-bootstrap.js"></script>
+</head>
+<body class="app-page">
+
+  <!-- TOP NAV -->
+  <header class="topbar">
+    <div class="brand">
+      <img src="assets/logo-icon.svg" alt="" class="brand-icon">
+      <span class="brand-name">WatermarkOut</span>
+      <span class="badge" id="version-badge">v1.5.0</span>
+    </div>
+    <nav class="topnav">
+      <button class="nav-btn active" data-view="app">Editor</button>
+      <a class="nav-btn" href="guide.html">Guide</a>
+      <a class="nav-btn" href="about.html">About</a>
+      <span class="status-pill" id="status-pill">
+        <span class="status-dot" id="status-dot"></span>
+        <span id="status-text">Loading…</span>
+      </span>
+    </nav>
+  </header>
+
+  <!-- UPDATE BANNER -->
+  <div class="update-banner" id="update-banner" hidden>
+    <span>⚡ A new version of WatermarkOut is ready.</span>
+    <button class="btn-ghost btn-sm" id="btn-update">Reload to update</button>
+    <button class="btn-ghost btn-sm" id="btn-update-dismiss" aria-label="Dismiss">✕</button>
+  </div>
+
+  <!-- HERO — the page's only H1. Kept compact so it doesn't crowd the editor,
+       but it is real, always-visible, keyword-bearing text that does not
+       depend on JavaScript running. -->
+  <section class="hero">
+    <h1 class="hero-title">Free AI Watermark Remover</h1>
+    <p class="hero-sub">
+      Detects and removes visible watermarks from AI-generated images and short
+      videos — Google Gemini, Bing Image Creator, Meta AI and more. The AI runs
+      inside this browser tab, so your files are never uploaded anywhere.
+    </p>
+  </section>
+
+  <noscript>
+    <div class="noscript-note">
+      <strong>WatermarkOut needs JavaScript.</strong>
+      The watermark removal runs entirely on your own device using WebAssembly,
+      so there is no server to fall back to. Enable JavaScript to use the editor,
+      or <a href="about.html">read how it works</a>.
+    </div>
+  </noscript>
+
+  <!-- MODEL LOADER — a slim status strip, NOT a full-screen gate.
+       It used to be a fixed overlay that covered the page until a 29 MB model
+       finished downloading, which meant neither users nor search-engine
+       crawlers could see any of the app until then. The editor is now visible
+       and usable immediately (drop a file, draw a mask); only the Remove
+       button waits for the model. -->
+  <div class="model-loader" id="model-loader">
+    <div class="loader-card">
+      <div class="loader-head">
+        <strong id="loader-title">Looking for the AI model…</strong>
+        <span class="loader-meta" id="loader-meta">Checking…</span>
+      </div>
+      <p class="text-muted loader-sub" id="loader-sub">Checking your device first — only downloads if it's not already here.</p>
+      <div class="progress-track">
+        <div class="progress-fill" id="loader-fill" style="width:0%"></div>
+        <div class="progress-shimmer"></div>
+      </div>
+      <p class="loader-tip text-muted" id="loader-backend"></p>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <main class="app-grid" id="app-grid">
+
+    <!-- LEFT SIDEBAR — all controls visible at all times -->
+    <aside class="sidebar">
+
+      <!-- File info -->
+      <div class="card" id="file-info-card">
+        <p class="label">FILE</p>
+        <p class="filename" id="file-name">No file loaded</p>
+        <div class="meta-row">
+          <span class="meta" id="file-dims">— × —</span>
+          <span class="meta" id="file-size">— MB</span>
+        </div>
+        <button class="btn-ghost btn-sm btn-full" id="btn-new-file" disabled>Replace file</button>
+      </div>
+
+      <!-- Quality -->
+      <div class="card" id="quality-card">
+        <p class="label">WHAT ARE YOU REMOVING?</p>
+        <div class="radio-group" role="radiogroup" aria-label="Removal mode">
+          <label title="Most generator badges are semi-transparent, so the picture underneath can be solved for and kept rather than repainted.">
+            <input type="radio" name="mode" value="watermark" checked> <span>Watermark</span>
+          </label>
+          <label title="A solid object or opaque logo genuinely hides what is behind it, so it has to be painted in by the AI.">
+            <input type="radio" name="mode" value="object"> <span>Object / opaque logo</span>
+          </label>
+        </div>
+        <p class="hint" id="mode-hint">Recovers the detail hidden under a see-through watermark instead of painting over it.</p>
+
+        <p class="label">QUALITY</p>
+        <div class="radio-group" role="radiogroup" aria-label="Removal quality">
+          <label title="One AI pass over anything that could not be recovered.">
+            <input type="radio" name="quality" value="standard" checked> <span>Standard</span>
+          </label>
+          <label title="A second refinement pass over the same area. Roughly twice as slow.">
+            <input type="radio" name="quality" value="high"> <span>High (2 passes)</span>
+          </label>
+        </div>
+        <p class="hint" id="quality-hint">One AI pass. Only used where recovery was not possible.</p>
+
+        <p class="label">MASK EXPAND</p>
+        <input type="range" min="0" max="32" value="8" class="slider" id="mask-expand">
+        <span class="slider-value" id="mask-expand-val">8 px</span>
+
+        <p class="label" id="output-format-label">OUTPUT FORMAT</p>
+        <select class="select" id="output-format">
+          <!-- Populated dynamically based on file type -->
+        </select>
+      </div>
+
+      <!-- Actions -->
+      <div class="actions" id="actions-card">
+        <button class="btn-primary btn-full" id="btn-remove" disabled>
+          <span class="btn-icon">✦</span> Remove watermark
+        </button>
+        <button class="btn-ghost btn-full" id="btn-download" disabled>
+          <span class="btn-icon">↓</span> Download result
+        </button>
+        <button class="btn-danger btn-full" id="btn-start-over" disabled title="Discard this file and start with a new one (Esc)">
+          <span class="btn-icon">🗑</span> Delete & start over
+        </button>
+      </div>
+
+
+
+      <!-- Storage & engine — surfaces model-cache.js and fs-folder.js, which
+           are fully implemented but previously had no UI to reach them. -->
+      <div class="card" id="storage-card">
+        <p class="label">STORAGE &amp; ENGINE</p>
+        <dl class="status-list">
+          <dt>AI model</dt>   <dd class="status-mini" id="model-status">Checking…</dd>
+          <dt>Running on</dt> <dd class="status-mini" id="backend-status">—</dd>
+          <dt>Used</dt>       <dd class="status-mini" id="storage-status">—</dd>
+          <dt>Saves to</dt>   <dd class="status-mini" id="folder-status">—</dd>
+        </dl>
+        <button class="btn-ghost btn-sm btn-full" id="btn-pick-folder"
+                title="Keep the model and your results in a real folder on disk, so clearing browser data doesn't lose them">
+          📁 Use a folder on my disk
+        </button>
+        <button class="btn-ghost btn-sm btn-full" id="btn-clear-model"
+                title="Remove the cached AI model from this device">
+          🗑 Clear cached model
+        </button>
+      </div>
+
+      <!-- Privacy reminder -->
+      <div class="privacy-note" id="privacy-note">
+        <p>🔒 Your file never leaves this browser tab.</p>
+      </div>
+
+    </aside>
+
+    <!-- CANVAS / CONTENT -->
+    <section class="canvas-area">
+
+      <!-- DROPZONE (initial state) -->
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-inner">
+          <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <h2 class="dropzone-title">Drop an image or video to start</h2>
+          <p class="dropzone-sub">JPG, PNG, WEBP, BMP, MP4, WEBM, MOV — up to 100 MB</p>
+          <button class="btn-primary" id="btn-browse">Browse files</button>
+          <input type="file" id="file-input" accept="image/*,video/*" hidden>
+          <div class="dropzone-formats">
+            <span class="badge">JPG</span>
+            <span class="badge">PNG</span>
+            <span class="badge">WEBP</span>
+            <span class="badge">BMP</span>
+            <span class="badge">MP4</span>
+            <span class="badge">WEBM</span>
+            <span class="badge">MOV</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EDITOR (after upload) -->
+      <div class="editor" id="editor" hidden>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <button class="tool-btn primary-tool" id="btn-detect"
+                  title="Suggest a mask for the watermark in the chosen corner">
+            <span class="tool-icon">✨</span> Find watermark
+          </button>
+          <select class="select select-toolbar" id="detect-region"
+                  title="Restrict the search if auto-detect picks the wrong thing">
+            <option value="bottom-right" selected>Bottom-right (most common)</option>
+            <option value="bottom-left">Bottom-left</option>
+            <option value="top-right">Top-right</option>
+            <option value="top-left">Top-left</option>
+          </select>
+          <button class="tool-btn" id="btn-detect-next" hidden
+                  title="Step to the next candidate position and size">
+            ↻ Try next
+          </button>
+          <span class="detect-status" id="detect-status"></span>
+          <div class="separator"></div>
+          <button class="tool-btn active" data-tool="rect" aria-pressed="true" title="Rectangle (R) — drag to refine">
+            <span class="tool-icon">▭</span> Rect
+          </button>
+          <button class="tool-btn" data-tool="brush" aria-pressed="false" title="Brush (B)">
+            <span class="tool-icon">✏</span> Brush
+          </button>
+          <button class="tool-btn" data-tool="erase" aria-pressed="false" title="Eraser (E) — remove from mask">
+            <span class="tool-icon">⌫</span> Erase
+          </button>
+          <div class="separator"></div>
+          <label class="tool-label">Size</label>
+          <input type="range" min="2" max="120" value="30" id="brush-size" class="slider slider-sm">
+          <span id="brush-size-val">30</span>
+          <div class="separator"></div>
+          <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)"><span class="tool-icon">↶</span></button>
+          <button class="tool-btn" id="btn-clear-mask" title="Clear mask">✕ Clear</button>
+          <div class="separator"></div>
+          <button class="tool-btn" id="btn-compare" title="Compare (Space)">⊟ Compare</button>
+          <button class="tool-btn" id="btn-zoom-fit" title="Fit">⤢ Fit</button>
+          <div class="ml-auto"></div>
+          <button class="tool-btn tool-danger" id="btn-delete-canvas" title="Delete this file and start over (Esc)">
+            <span class="tool-icon">🗑</span> Delete
+          </button>
+        </div>
+
+        <!-- Stage -->
+        <div class="stage" id="stage">
+          <div class="canvas-wrap" id="canvas-wrap">
+            <canvas id="canvas-image"></canvas>
+            <canvas id="canvas-result" hidden></canvas>
+            <!-- tabindex makes the mask drawable without a pointer: arrow keys
+                 move a crosshair, Enter paints or sets a rectangle corner. -->
+            <canvas id="canvas-mask" tabindex="0" role="application"
+                    aria-label="Watermark mask. Use the arrow keys to move the crosshair, Enter to draw. Hold Shift for larger steps, Alt for single pixels."></canvas>
+            <!-- Video playback elements (shown only when state.kind === 'video' and a result/original is being previewed) -->
+            <video id="video-original" hidden controls preload="auto"></video>
+            <video id="video-result" hidden controls preload="auto"></video>
+          </div>
+
+          <!-- BEFORE/AFTER tag for video preview -->
+          <div class="preview-label" id="preview-label" hidden></div>
+
+          <!-- Hint shown when no mask drawn yet -->
+          <div class="stage-hint" id="stage-hint">
+            <p>↑ Click <strong>Detect watermark</strong>, or drag a rectangle over it</p>
+            <p class="stage-hint-kbd">Keyboard: focus the canvas, then arrow keys to move, Enter to draw</p>
+          </div>
+
+          <!-- Screen-reader announcements for keyboard masking -->
+          <div class="sr-only" id="mask-status" role="status" aria-live="polite"></div>
+
+          <!-- HUGE PROCESSING OVERLAY -->
+          <div class="processing-overlay" id="processing-overlay" hidden>
+            <div class="processing-card">
+              <div class="spinner-large"></div>
+              <h3 id="processing-title">Removing watermark…</h3>
+              <p class="processing-sub" id="processing-sub">This usually takes 5–30 seconds.</p>
+              <div class="progress-track">
+                <div class="progress-fill" id="processing-fill" style="width:0%"></div>
+                <div class="progress-shimmer"></div>
+              </div>
+              <p class="processing-stage" id="processing-stage">Preparing…</p>
+            </div>
+          </div>
+
+          <!-- WARN MODAL — appears center-stage if user tries to remove without mask -->
+          <div class="stage-modal" id="stage-modal" hidden>
+            <div class="stage-modal-card">
+              <div class="stage-modal-icon" id="stage-modal-icon">⚠️</div>
+              <h3 id="stage-modal-title">Heads up</h3>
+              <p id="stage-modal-msg">Draw a rectangle around the watermark first.</p>
+              <button class="btn-primary" id="stage-modal-ok">OK, got it</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Short intro only. The full explanation lives on guide.html — a tool page
+       should get you to the tool, not make you scroll past an essay. -->
+  <section class="page-intro">
+    <h2>Remove AI watermarks without uploading your files</h2>
+    <p>
+      The AI model runs inside this browser tab using WebAssembly, so the picture
+      you are editing never leaves your device. No upload, no account, no queue —
+      there is no server that could keep a copy, because there is no server.
+    </p>
+    <p>
+      Most watermarks from image generators are semi-transparent, which means the
+      picture underneath them still exists. Rather than painting over the badge
+      and inventing new pixels, WatermarkOut solves for what was behind it, so
+      texture and detail survive.
+    </p>
+    <p class="intro-links">
+      <a href="guide.html">Full guide: supported watermarks, formats, limits and FAQ →</a>
+    </p>
+  </section>
+
+
+  <footer class="site-footer">
+    <p>
+      Built by <a href="https://dicecodes.com" rel="noopener" target="_blank">Prince Ramgarhia (DiceCodes)</a>
+      · <a href="guide.html">Guide</a>
+      · <a href="about.html">About</a>
+      · <a href="https://github.com/IamRamgarhia/free-ai-watermark-remover" rel="noopener" target="_blank">Source on GitHub</a>
+      · MIT licensed · Made in India
+    </p>
+  </footer>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- DEBUG PANEL — toggled with the ` key, the 🪲 button, or ?debug in the URL.
+       Wired up by js/debug.js; error messages elsewhere point users here. -->
+  <button class="debug-toggle" id="debug-toggle" title="Debug panel (`)" aria-label="Toggle debug panel">🪲</button>
+  <aside class="debug-panel" id="debug-panel" hidden aria-label="Diagnostics panel">
+    <header class="debug-header">
+      <strong>Diagnostics</strong>
+      <button class="debug-close" id="debug-close" aria-label="Close diagnostics panel">✕</button>
+    </header>
+    <div class="debug-body">
+      <div class="debug-section">
+        <div class="debug-row"><span>Version</span><b id="dbg-version">—</b></div>
+        <div class="debug-row"><span>Cross-origin isolated</span><b id="dbg-coi">—</b></div>
+        <div class="debug-row"><span>Backend</span><b id="dbg-backend">—</b></div>
+        <div class="debug-row"><span>Threads</span><b id="dbg-threads">—</b></div>
+        <div class="debug-row"><span>Model</span><b id="dbg-model">—</b></div>
+        <div class="debug-row"><span>Ready</span><b id="dbg-ready">—</b></div>
+      </div>
+      <div class="debug-section">
+        <div class="debug-row"><span>File</span><b id="dbg-file">—</b></div>
+        <div class="debug-row"><span>Type</span><b id="dbg-filetype">—</b></div>
+        <div class="debug-row"><span>Dimensions</span><b id="dbg-dims">—</b></div>
+        <div class="debug-row"><span>Mask coverage</span><b id="dbg-coverage">—</b></div>
+        <div class="debug-row"><span>Tool</span><b id="dbg-tool">—</b></div>
+        <div class="debug-row"><span>Quality</span><b id="dbg-quality">standard</b></div>
+        <div class="debug-row"><span>Mode</span><b id="dbg-mode">watermark</b></div>
+        <div class="debug-row"><span>Removes</span><b id="dbg-removes">0</b></div>
+      </div>
+      <div class="debug-section">
+        <div class="debug-row"><span>Last action</span><b id="dbg-action">—</b></div>
+        <div class="debug-row"><span>Last error</span><b id="dbg-error" class="dbg-error-text">—</b></div>
+      </div>
+      <div class="debug-actions">
+        <button class="btn-ghost btn-sm" id="dbg-force-remove">Force remove</button>
+        <button class="btn-ghost btn-sm" id="dbg-fill-mask">Fill test mask</button>
+        <button class="btn-ghost btn-sm" id="dbg-copy">Copy state</button>
+      </div>
+      <details class="debug-log-wrap">
+        <summary>Event log</summary>
+        <pre class="debug-log" id="dbg-log"></pre>
+      </details>
+    </div>
+  </aside>
+
+
+  <!-- ONNX Runtime Web. crossorigin is needed under COI; integrity pins the
+       exact bytes so a compromised or swapped CDN file simply fails to load
+       rather than running with full page privileges.
+       Recompute with:
+         curl -sL <src> | openssl dgst -sha384 -binary | openssl base64 -A -->
+  <!-- `defer` so this doesn't block parsing. Deferred classic scripts and module
+       scripts run in document order, so `ort` is still defined before app.js. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.20.1/dist/ort.min.js"
+          integrity="sha384-RPL/K8tc0JVaNWsunkEmCzLeieefvFX2UCRLKLmLVChCI6P+CTKhzqF7VIeCc3Zp"
+          crossorigin="anonymous"></script>
+
+  <!-- App modules -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
